@@ -17,8 +17,9 @@ async Task Menu()
     Console.WriteLine("*********Log Shifts**********");
     Console.WriteLine("1. Log New Shift");
     Console.WriteLine("2. View Past Shifts");
-    Console.WriteLine("3. Update Past Shift");
-    Console.WriteLine("4. Delete Past Shift");
+    Console.WriteLine("3. View Past Shifts for Employee");
+    Console.WriteLine("4. Update Past Shift");
+    Console.WriteLine("5. Delete Past Shift");
     Console.WriteLine("0. Exit");
 
     string input = Console.ReadLine();
@@ -34,9 +35,12 @@ async Task Menu()
             await ViewShifts();
             break;
         case "3":
-            await UpdateShift();
+            await ViewEmpShifts();
             break;
         case "4":
+            await UpdateShift();
+            break;
+        case "5":
             await DeleteShift();
             break;
         case "0":
@@ -96,7 +100,7 @@ async Task AddShift()
 
     if (response.IsSuccessStatusCode)
     {
-        Console.WriteLine($"A shift of {newShift.Duration} has been logged for Employee {newShift.employeeId}");
+        Console.WriteLine($"A shift has been logged for Employee {newShift.employeeId}");
         Console.WriteLine("Returning to Main Menu...");
     }
     else
@@ -110,6 +114,29 @@ async Task ViewShifts()
     string response = await client.GetStringAsync("/api/ShiftLogger");
     Shifts shifts = JsonConvert.DeserializeObject<Shifts>(response);
     foreach(Shift shift in shifts)
+    {
+        Console.WriteLine($"({shift.shiftId}) Employee: {shift.employeeId}: {shift.Start} - {shift.End} Shift Time: {shift.Duration} ");
+    }
+    await Menu();
+}
+async Task ViewEmpShifts()
+{
+    Console.WriteLine("Enter employee ID of the past shifts you want to view: ");
+    string input = Console.ReadLine();
+    int empID=0;
+    if (string.IsNullOrWhiteSpace(input))
+        await Menu();
+    else if (int.TryParse(input, out int result))
+        empID = result;
+    else
+    {
+        Console.WriteLine("Enter a valid ID!");
+        await Menu();
+    }
+
+    string response = await client.GetStringAsync($"/api/ShiftLogger/{empID}");
+    Shifts shifts = JsonConvert.DeserializeObject<Shifts>(response);
+    foreach (Shift shift in shifts)
     {
         Console.WriteLine($"({shift.shiftId}) Employee: {shift.employeeId}: {shift.Start} - {shift.End} Shift Time: {shift.Duration} ");
     }

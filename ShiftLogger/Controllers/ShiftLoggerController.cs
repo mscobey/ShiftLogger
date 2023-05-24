@@ -30,11 +30,14 @@ namespace ShiftLogger.Controllers
         public async Task<ActionResult<List<Shift>>> Get(int id)
         {
             var shift = await _context.Shifts.FindAsync(id);
-            if (shift == null)
+            var empShift = await _context.Shifts.Where(x=>x.employeeId == id).ToListAsync();
+            if (shift == null && empShift == null)
                 return BadRequest("Shift not found.");
-
+            else if (shift == null)
+                return Ok(empShift);
             return Ok(shift);
         }
+
 
         // POST api/<ShiftLoggerController>
         [HttpPost]
